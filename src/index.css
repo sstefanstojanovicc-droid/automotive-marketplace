@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --color-surface-0: #0c0e12;
+  --color-surface-1: #12151c;
+  --color-surface-2: #1a1e28;
+  --color-surface-3: #232834;
+  --color-border: #2d3340;
+  --color-muted: #8b93a7;
+  --color-fg: #e8eaef;
+  --color-fg-soft: #b8becd;
+
+  --color-accent: #3bd4a9;
+  --color-accent-dim: #2a9d7e;
+  --color-accent-glow: rgba(59, 212, 169, 0.35);
+  --color-warn: #f5b942;
+  --color-danger: #f07178;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  font-family: var(--font-sans);
+  background: var(--color-surface-0);
+  color: var(--color-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* subtle grid + top glow */
+.bg-app {
+  background-color: var(--color-surface-0);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, var(--color-accent-glow), transparent),
+    linear-gradient(var(--color-border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    48px 48px,
+    48px 48px;
+  background-position: center top, center center, center center;
+}
