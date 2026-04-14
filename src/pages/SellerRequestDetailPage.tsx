@@ -99,16 +99,7 @@ export function SellerRequestDetailPage() {
             <h2 className="text-lg font-semibold text-fg">Blind bidding</h2>
             <p className="mt-1 text-sm text-fg-soft">
               You cannot see other tuners&apos; prices. Buyers see every offer privately and pick
-              one — same competitive dynamic as{' '}
-              <a
-                href="https://tunerfx.net/"
-                className="text-accent hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TunerFX
-              </a>
-              .
+              one.
             </p>
             <p className="mt-3 text-sm text-fg">
               Other tuners with a pending offer:{' '}

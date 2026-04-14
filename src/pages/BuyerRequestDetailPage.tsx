@@ -108,16 +108,7 @@ export function BuyerRequestDetailPage() {
           <div>
             <h2 className="text-lg font-semibold text-fg">Blind offers</h2>
             <p className="mt-1 text-sm text-fg-soft">
-              Only you see all prices — tuners cannot see each other&apos;s bids (same idea as{' '}
-              <a
-                href="https://tunerfx.net/"
-                className="text-accent hover:underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TunerFX
-              </a>
-              ).
+              Only you see all prices — tuners cannot see each other&apos;s bids.
             </p>
           </div>
         </div>

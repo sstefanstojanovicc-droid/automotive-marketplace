@@ -33,24 +33,15 @@ export function HomePage() {
         <div className="pointer-events-none absolute -bottom-24 left-1/4 h-48 w-48 rounded-full bg-warn/10 blur-3xl" />
         <div className="relative max-w-2xl">
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-accent">
-            European cars · digital calibrations
+            European vehicle tuning marketplace
           </p>
           <h1 className="mb-4 text-3xl font-bold tracking-tight text-fg sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
-            File exchange for tuners — blind bids, escrow, delivery
+            File requests, blind bids, escrow, and delivery in one workflow
           </h1>
           <p className="mb-8 max-w-xl text-base leading-relaxed text-fg-soft sm:text-lg">
-            Post a request with your VIN / ECU details, receive private offers from independent
-            tuners, then pay into <span className="text-fg">escrow</span> while files are delivered
-            — same core loop as{' '}
-            <a
-              href="https://tunerfx.net/"
-              className="text-accent underline-offset-4 hover:underline"
-              target="_blank"
-              rel="noreferrer"
-            >
-              TunerFX
-            </a>
-            , with our UI.
+            Submit your VIN and ECU details, receive private offers from verified sellers, and
+            place funds in <span className="text-fg">escrow</span> while your file is delivered.
+            Everything from request to handoff runs in one clean dashboard.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link

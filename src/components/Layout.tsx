@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Gauge, LayoutDashboard, Scale, Search, Shield, User } from 'lucide-react'
+import { Car, Gauge, LayoutDashboard, Scale, Search, Shield, User } from 'lucide-react'
 import { useSession } from '../context/Session'
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -105,6 +105,12 @@ export function Layout() {
                   <span className="hidden sm:inline">Buyer</span>
                 </span>
               </NavLink>
+              <NavLink to="/garage" className={navClass}>
+                <span className="flex items-center gap-1.5">
+                  <Car className="h-4 w-4" />
+                  <span className="hidden sm:inline">Garage</span>
+                </span>
+              </NavLink>
               <NavLink to="/seller" className={navClass}>
                 <span className="flex items-center gap-1.5">
                   <LayoutDashboard className="h-4 w-4" />
@@ -135,16 +141,7 @@ export function Layout() {
 
       <footer className="relative z-10 border-t border-border/60 py-8 text-center text-sm text-muted">
         <p>
-          DriveDigital · Escrow flow inspired by{' '}
-          <a
-            href="https://tunerfx.net/"
-            className="text-accent hover:underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            TunerFX
-          </a>
-          . Sellers from €30/mo · buyers free.
+          DriveDigital · Secure file exchange with escrow. Sellers from €30/mo · buyers free.
         </p>
       </footer>
     </div>

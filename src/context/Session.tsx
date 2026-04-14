@@ -42,6 +42,8 @@ type SessionValue = {
   requestMessages: RequestMessage[]
   requestOrders: RequestOrder[]
   disputes: DemoDispute[]
+  garageCars: GarageCar[]
+  garageFiles: GarageFile[]
   addFileRequest: (input: {
     summary: string
     vehicle: VehicleSpec
@@ -66,6 +68,12 @@ type SessionValue = {
   confirmDelivered: (requestId: string) => void
   openDispute: (requestId: string, reason: string) => void
   setDisputeStatus: (disputeId: string, status: DemoDispute['status']) => void
+  addGarageCar: (input: {
+    ownerType: GarageOwnerType
+    vehicle: VehicleSpec
+    label?: string
+    clientName?: string
+  }) => string
 }
 
 const SessionContext = createContext<SessionValue | null>(null)
@@ -114,6 +122,28 @@ type DemoDispute = {
   status: 'open' | 'review' | 'resolved'
 }
 
+type GarageOwnerType = 'personal' | 'client'
+
+type GarageCar = {
+  id: string
+  ownerType: GarageOwnerType
+  label: string
+  clientName?: string
+  vehicle: VehicleSpec
+  createdAt: string
+}
+
+type GarageFile = {
+  id: string
+  carId: string
+  requestId: string
+  requestFileId: string
+  name: string
+  dataUrl: string
+  mimeType: string
+  purchasedAt: string
+}
+
 type PersistedState = {
   fileRequests: FileRequest[]
   blindOffers: BlindOffer[]
@@ -121,6 +151,12 @@ type PersistedState = {
   requestMessages: RequestMessage[]
   requestOrders: RequestOrder[]
   disputes: DemoDispute[]
+  garageCars: GarageCar[]
+  garageFiles: GarageFile[]
+}
+
+function vehicleKey(v: VehicleSpec): string {
+  return `${v.make}::${v.model}::${v.year}::${v.ecu}`.toLowerCase()
 }
 
 function fileToDataUrl(file: File): Promise<string> {
@@ -149,6 +185,8 @@ function initialState(): PersistedState {
     requestMessages: [],
     requestOrders: [],
     disputes: seededDisputes,
+    garageCars: [],
+    garageFiles: [],
   }
 }
 
@@ -165,6 +203,8 @@ function loadState(): PersistedState {
       requestMessages: parsed.requestMessages ?? [],
       requestOrders: parsed.requestOrders ?? [],
       disputes: parsed.disputes ?? initialState().disputes,
+      garageCars: parsed.garageCars ?? [],
+      garageFiles: parsed.garageFiles ?? [],
     }
   } catch {
     return initialState()
@@ -182,6 +222,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   )
   const [requestOrders, setRequestOrders] = useState<RequestOrder[]>(() => boot.requestOrders)
   const [disputes, setDisputes] = useState<DemoDispute[]>(() => boot.disputes)
+  const [garageCars, setGarageCars] = useState<GarageCar[]>(() => boot.garageCars)
+  const [garageFiles, setGarageFiles] = useState<GarageFile[]>(() => boot.garageFiles)
 
   const setWorkspaceMode = useCallback((m: WorkspaceMode) => {
     setWorkspaceModeState(m)
@@ -373,13 +415,59 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       setFileRequests((prev) =>
         prev.map((r) => (r.id === requestId ? { ...r, status: 'completed' as const } : r)),
       )
+      const request = fileRequests.find((r) => r.id === requestId)
+      if (request) {
+        const existingCar = garageCars.find(
+          (c) => vehicleKey(c.vehicle) === vehicleKey(request.vehicle),
+        )
+        const carId =
+          existingCar?.id ??
+          (() => {
+            const id = `car-${Date.now()}`
+            const created: GarageCar = {
+              id,
+              ownerType: 'personal',
+              label: `${request.vehicle.make} ${request.vehicle.model} (${request.vehicle.year})`,
+              vehicle: request.vehicle,
+              createdAt: new Date().toISOString(),
+            }
+            setGarageCars((prev) => [created, ...prev])
+            return id
+          })()
+        const deliveryFiles = requestFiles.filter(
+          (f) => f.requestId === requestId && f.kind === 'delivery',
+        )
+        if (deliveryFiles.length > 0) {
+          setGarageFiles((prev) => {
+            const next = [...prev]
+            for (const f of deliveryFiles) {
+              const exists = next.some(
+                (g) => g.requestFileId === f.id && g.requestId === requestId && g.carId === carId,
+              )
+              if (!exists) {
+                next.unshift({
+                  id: `gfile-${Date.now()}-${f.id}`,
+                  carId,
+                  requestId,
+                  requestFileId: f.id,
+                  name: f.name,
+                  dataUrl: f.dataUrl,
+                  mimeType: f.mimeType,
+                  purchasedAt: new Date().toISOString(),
+                })
+              }
+            }
+            return next
+          })
+        }
+      }
       addMessage({
         requestId,
         author: 'system',
-        body: 'Buyer confirmed delivery. Escrow released in demo mode.',
+        body: 'Buyer confirmed delivery. Escrow released in demo mode and files saved to Garage.',
       })
     },
-    [addMessage],
+    [addMessage, fileRequests, garageCars, requestFiles],
   )
 
   const openDispute = useCallback(
@@ -422,6 +510,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setDisputes((prev) => prev.map((d) => (d.id === disputeId ? { ...d, status } : d)))
   }, [])
 
+  const addGarageCar = useCallback(
+    (input: {
+      ownerType: GarageOwnerType
+      vehicle: VehicleSpec
+      label?: string
+      clientName?: string
+    }) => {
+      const id = `car-${Date.now()}`
+      const next: GarageCar = {
+        id,
+        ownerType: input.ownerType,
+        label:
+          input.label?.trim() || `${input.vehicle.make} ${input.vehicle.model} (${input.vehicle.year})`,
+        clientName: input.clientName?.trim() || undefined,
+        vehicle: input.vehicle,
+        createdAt: new Date().toISOString(),
+      }
+      setGarageCars((prev) => [next, ...prev])
+      return id
+    },
+    [],
+  )
+
   useEffect(() => {
     try {
       const payload: PersistedState = {
@@ -431,12 +542,23 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         requestMessages,
         requestOrders,
         disputes,
+        garageCars,
+        garageFiles,
       }
       localStorage.setItem(STATE_KEY, JSON.stringify(payload))
     } catch {
       /* ignore */
     }
-  }, [fileRequests, blindOffers, requestFiles, requestMessages, requestOrders, disputes])
+  }, [
+    fileRequests,
+    blindOffers,
+    requestFiles,
+    requestMessages,
+    requestOrders,
+    disputes,
+    garageCars,
+    garageFiles,
+  ])
 
   const value = useMemo(
     () => ({
@@ -450,6 +572,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       requestMessages,
       requestOrders,
       disputes,
+      garageCars,
+      garageFiles,
       addFileRequest,
       submitBlindOffer,
       acceptOffer,
@@ -460,6 +584,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       confirmDelivered,
       openDispute,
       setDisputeStatus,
+      addGarageCar,
     }),
     [
       workspaceMode,
@@ -470,6 +595,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       requestMessages,
       requestOrders,
       disputes,
+      garageCars,
+      garageFiles,
       addFileRequest,
       submitBlindOffer,
       acceptOffer,
@@ -480,6 +607,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       confirmDelivered,
       openDispute,
       setDisputeStatus,
+      addGarageCar,
     ],
   )
 

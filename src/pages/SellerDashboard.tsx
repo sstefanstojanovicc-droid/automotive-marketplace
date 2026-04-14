@@ -221,17 +221,7 @@ export function SellerDashboard() {
             <div>
               <h2 className="text-lg font-semibold text-fg">Bid on buyer requests</h2>
               <p className="mt-1 text-sm text-fg-soft">
-                Tuners submit blind offers; buyers compare privately — then checkout with escrow
-                (same flow as{' '}
-                <a
-                  href="https://tunerfx.net/"
-                  className="text-accent hover:underline"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  TunerFX
-                </a>
-                ).
+                Tuners submit blind offers; buyers compare privately and continue through escrow.
               </p>
             </div>
           </div>

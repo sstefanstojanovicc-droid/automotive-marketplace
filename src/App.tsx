@@ -9,6 +9,7 @@ import { AdminPage } from './pages/AdminPage'
 import { BuyerDashboard } from './pages/BuyerDashboard'
 import { NewRequestPage } from './pages/NewRequestPage'
 import { BuyerRequestDetailPage } from './pages/BuyerRequestDetailPage'
+import { GaragePage } from './pages/GaragePage'
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="s/:id" element={<ServicePage />} />
             <Route path="buyer" element={<BuyerDashboard />} />
+            <Route path="garage" element={<GaragePage />} />
             <Route path="buyer/requests/new" element={<NewRequestPage />} />
             <Route path="buyer/requests/:id" element={<BuyerRequestDetailPage />} />
             <Route path="seller" element={<SellerDashboard />} />

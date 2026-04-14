@@ -128,16 +128,7 @@ export function BuyerDashboard() {
       </div>
 
       <p className="text-center text-xs text-muted">
-        Flow inspired by{' '}
-        <a
-          href="https://tunerfx.net/"
-          className="text-accent hover:underline"
-          target="_blank"
-          rel="noreferrer"
-        >
-          TunerFX
-        </a>
-        : blind bids → accept → pay → escrow → chat / delivery.
+        Marketplace flow: blind bids → accept → escrow → chat → delivery.
       </p>
     </div>
   )
