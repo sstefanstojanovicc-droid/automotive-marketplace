@@ -1,17 +1,22 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Upload } from 'lucide-react'
 import { useSession } from '../context/Session'
-import { categories, type CategoryId, type VehicleSpec } from '../data/seed'
+import { categories, serviceById, type CategoryId, type VehicleSpec } from '../data/seed'
 
 const fuelOptions: VehicleSpec['fuel'][] = ['Petrol', 'Diesel', 'Hybrid']
 
 export function NewRequestPage() {
   const navigate = useNavigate()
-  const { addFileRequest } = useSession()
-  const [summary, setSummary] = useState('')
-  const [goal, setGoal] = useState('')
-  const [categoryId, setCategoryId] = useState<CategoryId>('ecu-tcu')
+  const [searchParams] = useSearchParams()
+  const { addFileRequest, uploadRequestFile } = useSession()
+  const service = useMemo(() => {
+    const id = searchParams.get('service')
+    return id ? serviceById(id) : undefined
+  }, [searchParams])
+  const [summary, setSummary] = useState(service?.title ?? '')
+  const [goal, setGoal] = useState(service ? `I want this service: ${service.title}` : '')
+  const [categoryId, setCategoryId] = useState<CategoryId>(service?.categoryId ?? 'ecu-tcu')
   const [make, setMake] = useState('Renault')
   const [model, setModel] = useState('Megane IV RS')
   const [year, setYear] = useState(2022)
@@ -19,8 +24,9 @@ export function NewRequestPage() {
   const [ecu, setEcu] = useState('MG1CS016')
   const [fuel, setFuel] = useState<VehicleSpec['fuel']>('Petrol')
   const [powerKw, setPowerKw] = useState(205)
+  const [readFile, setReadFile] = useState<File | null>(null)
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     const vehicle: VehicleSpec = {
       make,
@@ -32,6 +38,9 @@ export function NewRequestPage() {
       powerKw: Number.isFinite(powerKw) ? powerKw : undefined,
     }
     const id = addFileRequest({ summary, goal, categoryId, vehicle })
+    if (readFile) {
+      await uploadRequestFile({ requestId: id, file: readFile, kind: 'input' })
+    }
     navigate(`/buyer/requests/${id}`)
   }
 
@@ -183,7 +192,14 @@ export function NewRequestPage() {
 
         <div className="rounded-xl border border-dashed border-border bg-surface-2/40 px-4 py-6 text-center text-sm text-fg-soft">
           <Upload className="mx-auto mb-2 h-8 w-8 text-muted" />
-          <p>Attach stock read or log — drag and drop enabled after file storage is connected.</p>
+          <p className="mb-3">Attach stock read or log for tuners.</p>
+          <input
+            type="file"
+            accept=".bin,.ori,.hex,.txt,.zip,.rar,.7z,.csv,.log"
+            onChange={(e) => setReadFile(e.target.files?.[0] ?? null)}
+            className="mx-auto block w-full max-w-xs rounded-lg border border-border bg-surface-0 px-3 py-2 text-xs text-fg"
+          />
+          {readFile && <p className="mt-2 text-xs text-accent">Selected: {readFile.name}</p>}
         </div>
 
         <button

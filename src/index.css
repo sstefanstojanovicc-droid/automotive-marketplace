@@ -39,6 +39,8 @@ body {
 
 /* subtle grid + top glow */
 .bg-app {
+  position: relative;
+  isolation: isolate;
   background-color: var(--color-surface-0);
   background-image:
     radial-gradient(ellipse 80% 50% at 50% -20%, var(--color-accent-glow), transparent),
@@ -49,4 +51,49 @@ body {
     48px 48px,
     48px 48px;
   background-position: center top, center center, center center;
+}
+
+.motion-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.82)),
+    url('/bmw-bg.png');
+  background-size: cover;
+  background-position: center 58%;
+  transform: scale(1.03);
+  filter: saturate(0.88) contrast(1.08) brightness(0.68);
+  animation: bmwFloat 18s ease-in-out infinite alternate;
+}
+
+.motion-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(55% 38% at 50% 100%, rgba(59, 212, 169, 0.08), transparent),
+    radial-gradient(80% 50% at 50% 0%, rgba(0, 0, 0, 0.4), transparent);
+}
+
+@keyframes bmwFloat {
+  0% {
+    background-position: center 58%;
+    transform: scale(1.03) translate3d(0, 0, 0);
+  }
+  50% {
+    background-position: center 54%;
+    transform: scale(1.06) translate3d(0, -4px, 0);
+  }
+  100% {
+    background-position: center 60%;
+    transform: scale(1.03) translate3d(0, 2px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-bg {
+    animation: none;
+  }
 }

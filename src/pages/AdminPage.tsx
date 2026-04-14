@@ -1,7 +1,11 @@
 import { Gavel, MessageSquareWarning } from 'lucide-react'
-import { adminDisputes } from '../data/seed'
+import { useSession } from '../context/Session'
 
 export function AdminPage() {
+  const { disputes, setDisputeStatus } = useSession()
+  const open = disputes.filter((d) => d.status === 'open').length
+  const review = disputes.filter((d) => d.status === 'review').length
+
   return (
     <div className="space-y-8">
       <div>
@@ -14,11 +18,11 @@ export function AdminPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-border bg-surface-1 p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">Open</p>
-          <p className="mt-1 font-mono text-2xl font-bold text-warn">1</p>
+          <p className="mt-1 font-mono text-2xl font-bold text-warn">{open}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface-1 p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">In review</p>
-          <p className="mt-1 font-mono text-2xl font-bold text-accent">1</p>
+          <p className="mt-1 font-mono text-2xl font-bold text-accent">{review}</p>
         </div>
         <div className="rounded-2xl border border-border bg-surface-1 p-5">
           <p className="text-xs font-medium uppercase tracking-wide text-muted">SLA target</p>
@@ -32,7 +36,7 @@ export function AdminPage() {
           Active cases
         </h2>
         <ul className="space-y-3">
-          {adminDisputes.map((d) => (
+          {disputes.map((d) => (
             <li
               key={d.id}
               className="rounded-2xl border border-border bg-surface-1 p-5 transition hover:border-accent/25"
@@ -59,10 +63,12 @@ export function AdminPage() {
                   </span>
                   <button
                     type="button"
-                    disabled
+                    onClick={() =>
+                      setDisputeStatus(d.id, d.status === 'open' ? 'review' : 'resolved')
+                    }
                     className="rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-xs font-medium text-fg-soft"
                   >
-                    Open case
+                    {d.status === 'open' ? 'Start review' : 'Resolve'}
                   </button>
                 </div>
               </div>

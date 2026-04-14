@@ -181,10 +181,10 @@ export function SellerDashboard() {
                 </p>
                 <button
                   type="button"
-                  disabled
-                  className="mt-4 w-full rounded-xl border border-border bg-surface-2 py-2.5 text-sm font-medium text-fg-soft"
+                  onClick={() => setTab('requests')}
+                  className="mt-4 w-full rounded-xl border border-border bg-surface-2 py-2.5 text-sm font-medium text-fg-soft hover:text-fg"
                 >
-                  Manage billing
+                  Go to active requests
                 </button>
               </div>
 
@@ -201,14 +201,13 @@ export function SellerDashboard() {
                     </li>
                   ))}
                 </ul>
-                <button
-                  type="button"
-                  disabled
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 text-sm font-semibold text-surface-0 opacity-80"
+                <Link
+                  to="/"
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-accent py-2.5 text-sm font-semibold text-surface-0 hover:bg-accent-dim"
                 >
                   <Plus className="h-4 w-4" />
-                  New listing
-                </button>
+                  Browse listing templates
+                </Link>
               </div>
             </div>
           </div>

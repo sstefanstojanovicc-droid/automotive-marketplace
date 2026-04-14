@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import {
   ArrowRight,
   CheckCircle2,
@@ -14,12 +14,17 @@ import type { CategoryId } from '../data/seed'
 import { ServiceCard } from '../components/ServiceCard'
 
 export function HomePage() {
+  const [searchParams] = useSearchParams()
   const [filter, setFilter] = useState<CategoryId | 'all'>('all')
+  const q = (searchParams.get('q') ?? '').trim().toLowerCase()
 
   const filtered = useMemo(() => {
-    if (filter === 'all') return services
-    return services.filter((s) => s.categoryId === filter)
-  }, [filter])
+    const byCategory = filter === 'all' ? services : services.filter((s) => s.categoryId === filter)
+    if (!q) return byCategory
+    return byCategory.filter((s) =>
+      `${s.title} ${s.description} ${s.tags.join(' ')}`.toLowerCase().includes(q),
+    )
+  }, [filter, q])
 
   return (
     <div className="space-y-16">

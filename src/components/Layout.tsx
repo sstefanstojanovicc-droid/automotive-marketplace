@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Gauge, LayoutDashboard, Scale, Search, Shield, User } from 'lucide-react'
 import { useSession } from '../context/Session'
 
@@ -11,10 +12,14 @@ const navClass = ({ isActive }: { isActive: boolean }) =>
   ].join(' ')
 
 export function Layout() {
+  const navigate = useNavigate()
+  const location = useLocation()
   const { workspaceMode, setWorkspaceMode, user, sellerPersona } = useSession()
+  const [query, setQuery] = useState('')
 
   return (
     <div className="bg-app min-h-svh">
+      <div className="motion-bg" aria-hidden="true" />
       <header className="sticky top-0 z-50 border-b border-border/80 bg-surface-0/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6">
           <Link
@@ -27,16 +32,22 @@ export function Layout() {
             <span className="hidden sm:inline">DriveDigital</span>
           </Link>
 
-          <label className="relative hidden min-w-0 flex-1 basis-full md:basis-auto lg:block">
+          <form
+            className="relative hidden min-w-0 flex-1 basis-full md:basis-auto lg:block"
+            onSubmit={(e) => {
+              e.preventDefault()
+              navigate(`/?q=${encodeURIComponent(query.trim())}`)
+            }}
+          >
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               type="search"
               placeholder="Search ECU files, maps, remote sessions…"
               className="w-full rounded-xl border border-border bg-surface-1 py-2.5 pl-10 pr-4 text-sm text-fg placeholder:text-muted outline-none ring-accent/0 transition-shadow focus:ring-2 focus:ring-accent/40"
-              readOnly
-              title="Search coming soon"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
-          </label>
+          </form>
 
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2 sm:gap-3">
             <div
@@ -52,7 +63,10 @@ export function Layout() {
               <div className="flex rounded-lg bg-surface-0 p-0.5">
                 <button
                   type="button"
-                  onClick={() => setWorkspaceMode('buyer')}
+                  onClick={() => {
+                    setWorkspaceMode('buyer')
+                    if (!location.pathname.startsWith('/buyer')) navigate('/buyer')
+                  }}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition sm:px-3 ${
                     workspaceMode === 'buyer'
                       ? 'bg-accent text-surface-0'
@@ -63,7 +77,10 @@ export function Layout() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setWorkspaceMode('seller')}
+                  onClick={() => {
+                    setWorkspaceMode('seller')
+                    if (!location.pathname.startsWith('/seller')) navigate('/seller')
+                  }}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-semibold transition sm:px-3 ${
                     workspaceMode === 'seller'
                       ? 'bg-accent text-surface-0'
@@ -112,11 +129,11 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <main className="relative z-10 mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/60 py-8 text-center text-sm text-muted">
+      <footer className="relative z-10 border-t border-border/60 py-8 text-center text-sm text-muted">
         <p>
           DriveDigital · Escrow flow inspired by{' '}
           <a

@@ -70,14 +70,12 @@ export function ServicePage() {
                 <p className="text-xs uppercase tracking-wide text-muted">Price</p>
                 <p className="font-mono text-3xl font-bold text-fg">€{service.priceEur}</p>
               </div>
-              <button
-                type="button"
-                disabled
-                title="Complete checkout to place order"
-                className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-surface-0 opacity-60"
+              <Link
+                to={`/buyer/requests/new?service=${service.id}`}
+                className="rounded-xl bg-accent px-6 py-3 text-sm font-semibold text-surface-0 hover:bg-accent-dim"
               >
-                Order with escrow
-              </button>
+                Start request from this listing
+              </Link>
             </div>
             <p className="mt-4 flex items-start gap-2 text-xs text-muted">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-accent" />

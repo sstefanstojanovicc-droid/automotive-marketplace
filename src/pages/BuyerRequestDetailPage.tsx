@@ -1,11 +1,25 @@
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle2, EyeOff, MessageCircle, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Download, EyeOff, MessageCircle, ShieldCheck } from 'lucide-react'
 import { useSession } from '../context/Session'
 import { categories, sellerById } from '../data/seed'
 
 export function BuyerRequestDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const { user, fileRequests, blindOffers, acceptOffer } = useSession()
+  const {
+    user,
+    fileRequests,
+    blindOffers,
+    acceptOffer,
+    requestFiles,
+    requestMessages,
+    requestOrders,
+    addMessage,
+    startDemoCheckout,
+    confirmDelivered,
+    openDispute,
+  } = useSession()
+  const [message, setMessage] = useState('')
   const request = fileRequests.find((r) => r.id === id)
   const offers = blindOffers
     .filter((o) => o.requestId === id && o.status === 'pending')
@@ -14,6 +28,15 @@ export function BuyerRequestDetailPage() {
 
   const accepted = blindOffers.find(
     (o) => o.requestId === id && o.status === 'accepted',
+  )
+  const order = requestOrders.find((o) => o.requestId === id)
+  const files = useMemo(
+    () => requestFiles.filter((f) => f.requestId === id),
+    [requestFiles, id],
+  )
+  const messages = useMemo(
+    () => requestMessages.filter((m) => m.requestId === id),
+    [requestMessages, id],
   )
 
   if (!request || request.buyerId !== user.id) {
@@ -110,10 +133,48 @@ export function BuyerRequestDetailPage() {
               </p>
               <p className="mt-2 flex items-center gap-2 text-xs text-muted">
                 <ShieldCheck className="h-4 w-4 text-accent" />
-                Next: complete payment → funds in escrow → tuner uploads → you confirm → 72h
-                auto-release if no dispute.
+                Next: run demo checkout (no charge) to start escrow and unlock delivery flow.
               </p>
+              {!order && (
+                <button
+                  type="button"
+                  onClick={() => startDemoCheckout(request.id, accepted.id)}
+                  className="mt-3 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-surface-0 hover:bg-accent-dim"
+                >
+                  Start demo checkout (no payment)
+                </button>
+              )}
             </div>
+          </div>
+        )}
+
+        {order && (
+          <div className="mb-6 rounded-2xl border border-border bg-surface-2/40 p-4 text-sm">
+            <p className="font-medium text-fg">
+              Demo order {order.id} · €{order.amountEur}
+            </p>
+            <p className="mt-1 text-fg-soft">
+              Status:{' '}
+              <span className="font-semibold text-accent">{order.status.replace('_', ' ')}</span>
+            </p>
+            {order.status === 'delivered' && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => confirmDelivered(request.id)}
+                  className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-surface-0 hover:bg-accent-dim"
+                >
+                  Confirm delivery
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openDispute(request.id, 'Delivery needs revision')}
+                  className="rounded-lg border border-border bg-surface-1 px-4 py-2 text-sm font-medium text-fg-soft"
+                >
+                  Open dispute
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -158,8 +219,67 @@ export function BuyerRequestDetailPage() {
       <div className="rounded-2xl border border-border bg-surface-2/30 p-4">
         <p className="flex items-center gap-2 text-sm text-fg-soft">
           <MessageCircle className="h-4 w-4 text-accent" />
-          Chat, revisions, and file handoff live in the order thread after checkout.
+          Chat, revisions, and file handoff are active for this request.
         </p>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface-1 p-5">
+        <h2 className="mb-3 text-lg font-semibold text-fg">Files</h2>
+        {files.length === 0 && <p className="text-sm text-fg-soft">No files uploaded yet.</p>}
+        <ul className="space-y-2">
+          {files.map((f) => (
+            <li
+              key={f.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface-2/30 px-3 py-2"
+            >
+              <p className="text-sm text-fg-soft">
+                {f.name} · {Math.ceil(f.size / 1024)} KB · {f.uploadedBy}
+              </p>
+              <a
+                href={f.dataUrl}
+                download={f.name}
+                className="inline-flex items-center gap-1 rounded-lg bg-surface-1 px-3 py-1.5 text-xs font-medium text-accent"
+              >
+                <Download className="h-3.5 w-3.5" />
+                Download
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-surface-1 p-5">
+        <h2 className="mb-3 text-lg font-semibold text-fg">Thread</h2>
+        <ul className="mb-4 space-y-2">
+          {messages.map((m) => (
+            <li key={m.id} className="rounded-lg border border-border bg-surface-2/30 px-3 py-2">
+              <p className="text-xs uppercase tracking-wide text-muted">{m.author}</p>
+              <p className="text-sm text-fg-soft">{m.body}</p>
+            </li>
+          ))}
+          {messages.length === 0 && <p className="text-sm text-fg-soft">No messages yet.</p>}
+        </ul>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            addMessage({ requestId: request.id, author: 'buyer', body: message })
+            setMessage('')
+          }}
+          className="flex gap-2"
+        >
+          <input
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className="flex-1 rounded-lg border border-border bg-surface-0 px-3 py-2 text-sm text-fg"
+            placeholder="Write message to seller..."
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-surface-0"
+          >
+            Send
+          </button>
+        </form>
       </div>
     </div>
   )
